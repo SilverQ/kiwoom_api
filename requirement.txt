@@ -1,0 +1,5 @@
+openpyxl == 3.0.5
+pykiwoom == 0.0.6
+pandas == 1.1.4
+PyQt5 == 5.15.2
+pywin32 == 300
