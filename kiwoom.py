@@ -1,66 +1,304 @@
-# https://www.youtube.com/watch?v=R5Vp4p5fjdc
-import sys  # 파이썬 스크립트 관리 기능 포함
+import sys
 from PyQt5.QtWidgets import *
 from PyQt5.QAxContainer import *
 from PyQt5.QtCore import *
-from PyQt5.QtTest import *
+import time
+import pandas as pd
+import sqlite3
+
+# https://kminito.tistory.com/36
+
+TR_REQ_TIME_INTERVAL = 0.2
 
 
 class Kiwoom(QAxWidget):
 
     def __init__(self):
-        # print('Kiwoom Start')
         super().__init__()
-        self.login_event_loop = QEventLoop()  # 로그인을 요청하고 완료할 때까지 기다려주는 로프 변수
-        self.calculator_event_loop = QEventLoop()  # 로그인을 요청하고 완료할 때까지 기다려주는 로프 변수
-        self.get_ocx_instance()
-        # 로그인을 하려면 알아야 하는 3가지 : 증권 서버에 요청하는 함수 '시그널', (이미 만들어져서 API로 제공)
-        # 요청 결과를 어느 함수에서 받을지 지정해주는 '이벤트' (이미 만들어져서 API로 제공)
-        # 요청 결과를 받을 함수인 '슬롯'
-        self.event_slots()  # 이벤트 슬롯을 init 함수에서 실행
-        self.signal_login_commConnect()  # 로그인 요청을 실행
-        self.calculator_func()
+        self._create_kiwoom_instance()
+        self._set_signal_slots()
+        self.condition = {}
+        self.msg = ""
 
-    def get_ocx_instance(self):
-        # OCX 방식으로 구성된 키움 관련 정보가 포함되어 있는 레지스트리 파일명 설정
-        self.setControl('KHOPENAPI.KHOpenAPICtrl.1')
+    def _create_kiwoom_instance(self):
+        self.setControl("KHOPENAPI.KHOpenAPICtrl.1")
 
-    def event_slots(self):
-        self.OnEventConnect.connect(self.login_slot)
+    def _set_signal_slots(self):
+        self.OnEventConnect.connect(self._event_connect)
+        self.OnReceiveTrData.connect(self._receive_tr_data)
 
-    def signal_login_commConnect(self):
-        self.dynamicCall('CommConnect()')  # 로그인 요청 시그널
-        self.login_event_loop.exec_()  # 이벤트 루프 실행
+        ## 조건검색식 관련 추가
+        self.OnReceiveConditionVer.connect(self.receiveConditionVer)
+        self.OnReceiveTrCondition.connect(self.receiveTrCondition)
+        self.OnReceiveRealCondition.connect(self.receiveRealCondition)
 
-    def login_slot(self, err_code):
+    def comm_connect(self):
+        self.dynamicCall("CommConnect()")
+        self.login_event_loop = QEventLoop()
+        self.login_event_loop.exec_()
+
+    def _event_connect(self, err_code):
         if err_code == 0:
-            print('Login Success')
+            print("connected")
         else:
-            print('Error to Login')
-        self.login_event_loop.exit()  # 직접 exit 함수로 종료시켜줘야 다음 코드가 실행
+            print("disconnected")
 
-    def calculator_func(self):
-        code_list = self.dynamicCall('GetCodeListByMarket(QString)', '0')
-        code_list = code_list.split(';')[:-1]
-        print('주식수: ', len(code_list), code_list[:10])  # 13503 000020;000 -> 1929개
-        for idx, code in enumerate(code_list):
-            code_nm = self.dynamicCall('GetMasterCodeName(QString)', code)
-            print(f'{idx+1} / {len(code_list)} : {code} / {code_nm}')
-            self.day_kiwoom_db(code=code)
+        self.login_event_loop.exit()
 
-    def day_kiwoom_db(self, code):
-        QTest.qWait(3600)  # 다음줄의 코드가 실행되는 것을 막으면서 요청 중인 이벤트 처리는 유지해주는 타이머 명령
-        self.dynamicCall('SetInputValue(QString)', '종목코드', code)
-        self.dynamicCall('SetInputValue(QString)', '수정주가구분', '1')
-# https://youtu.be/SsPGK4rXq-E?t=204
+    def get_code_list_by_market(self, market):
+        code_list = self.dynamicCall("GetCodeListByMarket(QString)", market)
+        code_list = code_list.split(';')
+        return code_list[:-1]
+
+    def get_master_code_name(self, code):
+        code_name = self.dynamicCall("GetMasterCodeName(QString)", code)
+        return code_name
+
+    def get_connect_state(self):
+        ret = self.dynamicCall("GetConnectState()")
+        return ret
+
+    def get_login_info(self, tag):
+        ret = self.dynamicCall("GetLoginInfo(QString)", tag)
+        return ret
+
+    def set_input_value(self, id, value):
+        self.dynamicCall("SetInputValue(QString, QString)", id, value)
+
+    def comm_rq_data(self, rqname, trcode, next, screen_no):
+        self.dynamicCall("CommRqData(QString, QString, int, QString)", rqname, trcode, next, screen_no)
+        self.tr_event_loop = QEventLoop()
+        self.tr_event_loop.exec_()
+
+    def _comm_get_data(self, code, real_type, field_name, index, item_name):
+        ret = self.dynamicCall("CommGetData(QString, QString, QString, int, QString)", code,
+                               real_type, field_name, index, item_name)
+        return ret.strip()
+
+    def _get_repeat_cnt(self, trcode, rqname):
+        ret = self.dynamicCall("GetRepeatCnt(QString, QString)", trcode, rqname)
+        return ret
+
+    def send_order(self, rqname, screen_no, acc_no, order_type, code, quantity, price, hoga, order_no):
+        self.dynamicCall("SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)",
+                         [rqname, screen_no, acc_no, order_type, code, quantity, price, hoga, order_no])
+
+    def get_chejan_data(self, fid):
+        ret = self.dynamicCall("GetChejanData(int)", fid)
+        return ret
+
+    def _receive_chejan_data(self, gubun, item_cnt, fid_list):
+        print(gubun)
+        print(self.get_chejan_data(9203))
+        print(self.get_chejan_data(302))
+        print(self.get_chejan_data(900))
+        print(self.get_chejan_data(901))
+
+    def _receive_tr_data(self, screen_no, rqname, trcode, record_name, next, unused1, unused2, unused3, unused4):
+        if next == '2':
+            self.remained_data = True
+        else:
+            self.remained_data = False
+
+        if rqname == "opt10081_req":
+            self._opt10081(rqname, trcode)
+
+        try:
+            self.tr_event_loop.exit()
+        except AttributeError:
+            pass
+
+    def _opt10081(self, rqname, trcode):
+        data_cnt = self._get_repeat_cnt(trcode, rqname)
+
+        for i in range(data_cnt):
+            date = self._comm_get_data(trcode, "", rqname, i, "일자")
+            open = self._comm_get_data(trcode, "", rqname, i, "시가")
+            high = self._comm_get_data(trcode, "", rqname, i, "고가")
+            low = self._comm_get_data(trcode, "", rqname, i, "저가")
+            close = self._comm_get_data(trcode, "", rqname, i, "현재가")
+            volume = self._comm_get_data(trcode, "", rqname, i, "거래량")
+
+            self.ohlcv['date'].append(date)
+            self.ohlcv['open'].append(int(open))
+            self.ohlcv['high'].append(int(high))
+            self.ohlcv['low'].append(int(low))
+            self.ohlcv['close'].append(int(close))
+            self.ohlcv['volume'].append(int(volume))
+
+    ###############################################################
+    # 메서드 정의: 조건검색 관련 메서드와 이벤트                    #
+    ###############################################################
+
+    def receiveConditionVer(self, receive, msg):
+        """
+        getConditionLoad() 메서드의 조건식 목록 요청에 대한 응답 이벤트
+
+        :param receive: int - 응답결과(1: 성공, 나머지 실패)
+        :param msg: string - 메세지
+        """
+        print("[receiveConditionVer]")
+        try:
+            if not receive:
+                return
+
+            self.condition = self.getConditionNameList()
+            print("조건식 개수: ", len(self.condition))
+
+            for key in self.condition.keys():
+                print("조건식: ", key, ": ", self.condition[key])
+                # print("key type: ", type(key))
+
+        except Exception as e:
+            print(e)
+
+        finally:
+            self.conditionLoop.exit()
+
+    def receiveTrCondition(self, screenNo, codes, conditionName, conditionIndex, inquiry):
+        """
+        (1회성, 실시간) 종목 조건검색 요청시 발생되는 이벤트
+
+        :param screenNo: string
+        :param codes: string - 종목코드 목록(각 종목은 세미콜론으로 구분됨)
+        :param conditionName: string - 조건식 이름
+        :param conditionIndex: int - 조건식 인덱스
+        :param inquiry: int - 조회구분(0: 남은데이터 없음, 2: 남은데이터 있음)
+        """
+
+        print("[receiveTrCondition]")
+        try:
+            if codes == "":
+                return
+
+            codeList = codes.split(';')
+            del codeList[-1]
+
+            print(codeList)
+            print("종목개수: ", len(codeList))
+            msg = ""
+            for code in codeList:
+                msg += "{} {}\n".format(code, self.get_master_code_name(code))
+            self.msg += msg
+        finally:
+            self.conditionLoop.exit()
+
+    def receiveRealCondition(self, code, event, conditionName, conditionIndex):
+        print("[receiveRealCondition]")
+        """
+        실시간 종목 조건검색 요청시 발생되는 이벤트
+
+        :param code: string - 종목코드
+        :param event: string - 이벤트종류("I": 종목편입, "D": 종목이탈)
+        :param conditionName: string - 조건식 이름
+        :param conditionIndex: string - 조건식 인덱스(여기서만 인덱스가 string 타입으로 전달됨)
+        """
+
+        print("종목코드: {}, 종목명: {}".format(code, self.get_master_code_name(code)))
+
+        print("이벤트: ", "종목편입" if event == "I" else "종목이탈")
+
+        # bot.sendMessage(chat_id=chat_id, text="종목코드: {} , {}".format(code, event))
+        msg = "{} {} {}\n".format("종목편입" if event == "I" else "종목이탈", code, self.get_master_code_name(code))
+        self.msg += msg
+
+    def getConditionLoad(self):
+        print("[getConditionLoad]")
+        """ 조건식 목록 요청 메서드 """
+
+        isLoad = self.dynamicCall("GetConditionLoad()")
+        # 요청 실패시
+        if not isLoad:
+            print("getConditionLoad(): 조건식 요청 실패")
+
+        # receiveConditionVer() 이벤트 메서드에서 루프 종료
+        self.conditionLoop = QEventLoop()
+        self.conditionLoop.exec_()
+
+    def getConditionNameList(self):
+        print("[getConditionNameList]")
+        """
+        조건식 획득 메서드
+
+        조건식을 딕셔너리 형태로 반환합니다.
+        이 메서드는 반드시 receiveConditionVer() 이벤트 메서드안에서 사용해야 합니다.
+
+        :return: dict - {인덱스:조건명, 인덱스:조건명, ...}
+        """
+
+        data = self.dynamicCall("GetConditionNameList()")
+
+        if data == "":
+            print("getConditionNameList(): 사용자 조건식이 없습니다.")
+
+        conditionList = data.split(';')
+        del conditionList[-1]
+
+        conditionDictionary = {}
+
+        for condition in conditionList:
+            key, value = condition.split('^')
+            conditionDictionary[int(key)] = value
+
+        return conditionDictionary
+
+    def sendCondition(self, screenNo, conditionName, conditionIndex, isRealTime):
+        print("[sendCondition]")
+        """
+        종목 조건검색 요청 메서드
+
+        이 메서드로 얻고자 하는 것은 해당 조건에 맞는 종목코드이다.
+        해당 종목에 대한 상세정보는 setRealReg() 메서드로 요청할 수 있다.
+        요청이 실패하는 경우는, 해당 조건식이 없거나, 조건명과 인덱스가 맞지 않거나, 조회 횟수를 초과하는 경우 발생한다.
+
+        조건검색에 대한 결과는
+        1회성 조회의 경우, receiveTrCondition() 이벤트로 결과값이 전달되며
+        실시간 조회의 경우, receiveTrCondition()과 receiveRealCondition() 이벤트로 결과값이 전달된다.
+
+        :param screenNo: string
+        :param conditionName: string - 조건식 이름
+        :param conditionIndex: int - 조건식 인덱스
+        :param isRealTime: int - 조건검색 조회구분(0: 1회성 조회, 1: 실시간 조회)
+        """
+
+        isRequest = self.dynamicCall("SendCondition(QString, QString, int, int",
+                                     screenNo, conditionName, conditionIndex, isRealTime)
+
+        if not isRequest:
+            print("sendCondition(): 조건검색 요청 실패")
+
+        # receiveTrCondition() 이벤트 메서드에서 루프 종료
+        self.conditionLoop = QEventLoop()
+        self.conditionLoop.exec_()
+        msg = "{} 실행\n".format(conditionName)
+        self.msg += msg
+
+    def sendConditionStop(self, screenNo, conditionName, conditionIndex):
+
+        print("[sendConditionStop]")
+        """ 종목 조건검색 중지 메서드 """
+
+        self.dynamicCall("SendConditionStop(QString, QString, int)",
+                         screenNo, conditionName, conditionIndex)
+        msg = "{} 중지\n".format(conditionName)
+        self.msg += msg
 
 
-class Main:
-
-    def __init__(self):
-        self.app = QApplication(sys.argv)  # 동시성 처리를 할 수 있게 해주는 함수를 포함
-        self.kiwoom = Kiwoom()
-        self.app.exec()  # 프로그램이 종료되지 않고 동시성 처리를 지원하도록 만들어줌
-
-
-Main()
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    kiwoom = Kiwoom()
+    kiwoom.comm_connect()
+    kiwoom.getConditionLoad()
+    """
+    :param screenNo: string
+    :param conditionName: string - 조건식 이름
+    :param conditionIndex: int - 조건식 인덱스
+    :param isRealTime: int - 조건검색 조회구분(0: 1회성 조회, 1: 실시간 조회)
+    """
+    # kiwoom.sendCondition("1", "PBR_MACD", 0, 0)
+    # kiwoom.sendCondition("1", "PBR0.5", 1, 0)
+    # kiwoom.sendCondition("1", "Env하한돌파", 13, 0)
+    # for key in kiwoom.condition.keys():
+    #     print(key, kiwoom.condition[key])
+        # kiwoom.sendCondition("1", kiwoom.condition[key], key, 0)
+    # print(self.code_list)
