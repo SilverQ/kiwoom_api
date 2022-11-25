@@ -6,6 +6,7 @@ from Kiwoom import *
 import telegram
 # 파이썬으로 텔레그램 봇 사용하기
 # https://kminito.tistory.com/37?category=373099
+# AI 자동 투자 봇 만들기  https://wikidocs.net/85329
 
 form_class = uic.loadUiType("pytrader.ui")[0]
 
@@ -75,12 +76,18 @@ class MyWindow(QMainWindow, form_class):
 
         self.statusbar.showMessage(state_msg + " | " + time_msg)
         if self.kiwoom.msg:
-            # 텔레그램
-            if self.checkBox_cond.isChecked():
-                self.kiwoom.bot.sendMessage(chat_id=self.kiwoom.chat_id, text=self.kiwoom.msg)
-            # 로그창에 내용 입력
-            self.textEdit_cond.append(self.kiwoom.msg)
-            self.kiwoom.msg = ""
+            try:
+                # 텔레그램
+                if self.checkBox_cond.isChecked():
+                    self.kiwoom.bot.sendMessage(chat_id=self.kiwoom.chat_id, text=self.kiwoom.msg)
+            except Exception as e:
+                print('Telegram Message Error: ', e)
+            try:
+                # 로그창에 내용 입력
+                self.textEdit_cond.append(self.kiwoom.msg)
+                self.kiwoom.msg = ""
+            except:
+                pass
 
     """ condiComboBox에 condition List를 설정 """
     def load_condition_list(self):
@@ -131,6 +138,3 @@ if __name__ == "__main__":
     myWindow = MyWindow()
     myWindow.show()
     app.exec_()
-    # bot = telegram.bot(token='5838219107:AAFU0Nls-86wyXzs3GHrEocBxpm_q9QdErc')
-    # chat_id = 5854281101
-    # bot.sendMessage(chat_id=chat_id, text='Success to Login')
