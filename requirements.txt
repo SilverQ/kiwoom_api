@@ -3,3 +3,4 @@ pykiwoom==0.0.6
 pandas==1.1.4
 PyQt5==5.12.3
 pywin32==300
+python-telegram-bot==13.12

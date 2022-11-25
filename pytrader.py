@@ -3,6 +3,8 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5 import uic
 from Kiwoom import *
+import telegram
+# 파이썬으로 텔레그램 봇 사용하기
 # https://kminito.tistory.com/37?category=373099
 
 form_class = uic.loadUiType("pytrader.ui")[0]
@@ -30,9 +32,17 @@ class MyWindow(QMainWindow, form_class):
         self.lineEdit.textChanged.connect(self.code_changed)
         self.pushButton.clicked.connect(self.send_order)
 
-        self.load_condition_list()
-        self.checkBox_cond.setChecked(True) # 체크박스 체크를 기본 설정으로
+        self.load_condition_list()  # 시작할 때 리스트를 채워준다
+        self.checkBox_cond.setChecked(True)  # 체크박스 체크를 기본 설정으로
         self.pushButton_cond.clicked.connect(self.start_cond)
+
+        # self.bot = telegram.Bot(token='5838219107:AAFU0Nls-86wyXzs3GHrEocBxpm_q9QdErc')
+        # self.chat_id = 5854281101
+        # self.bot.sendMessage(chat_id=self.chat_id, text=self.kiwoom.msg)
+        # self.kiwoom.
+
+    def initUI(self):
+        self.setWindowTitle('Condition Monitor Bot v0.1')
 
     def code_changed(self):
         code = self.lineEdit.text()
@@ -72,9 +82,9 @@ class MyWindow(QMainWindow, form_class):
             self.textEdit_cond.append(self.kiwoom.msg)
             self.kiwoom.msg = ""
 
+    """ condiComboBox에 condition List를 설정 """
     def load_condition_list(self):
         print("pytrader.py [load_condition_list]")
-        """ condiComboBox에 condition List를 설정한다. """
 
         cond_list = []
         try:
@@ -91,6 +101,7 @@ class MyWindow(QMainWindow, form_class):
 
         except Exception as e:
             print(e)
+        # return dic  # 내가 추가한 코드, 반환된 리스트를 채팅으로 보내려면?
 
     def start_cond(self):
         conditionIndex = self.comboBox_cond.currentText().split(';')[0]
@@ -98,6 +109,7 @@ class MyWindow(QMainWindow, form_class):
 
         if self.pushButton_cond.text() == "적용":
             try:
+                print('조건검색 조회')
                 self.kiwoom.sendCondition("0", conditionName, int(conditionIndex), 1)
                 self.pushButton_cond.setText("해제")
                 self.comboBox_cond.setEnabled(False)
@@ -105,7 +117,7 @@ class MyWindow(QMainWindow, form_class):
                 print("{} activated".format(conditionName))
 
             except Exception as e:
-                print(e)
+                print('here?', e)  # 'Kiwoom' object has no attribute 'comboBox_cond'
 
         else:
             self.kiwoom.sendConditionStop("0", conditionName, conditionIndex)
@@ -113,13 +125,12 @@ class MyWindow(QMainWindow, form_class):
             self.comboBox_cond.setEnabled(True)
             self.checkBox_cond.setEnabled(True)
 
-        self.load_condition_list()
-        self.checkBox_cond.setChecked(True) # 텔레그램 알림받기 체크를 기본으로
-        self.pushButton_cond.clicked.connect(self.start_cond) #적용버튼과 start_cond 함수 연결
-
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     myWindow = MyWindow()
     myWindow.show()
     app.exec_()
+    # bot = telegram.bot(token='5838219107:AAFU0Nls-86wyXzs3GHrEocBxpm_q9QdErc')
+    # chat_id = 5854281101
+    # bot.sendMessage(chat_id=chat_id, text='Success to Login')
