@@ -1,4 +1,13 @@
 # 파이썬으로 배우는 알고리즘 트레이딩
 # https://wikidocs.net/book/110
 # https://wikidocs.net/5931
-# AI 자동 투자 봇 만들기  https://wikidocs.net/85329
+
+# AI 자동 투자 봇 만들기
+# https://wikidocs.net/85329
+
+# Envelope 선을 사용한 낙폭과대주 매매
+# https://stylebalance.tistory.com/77
+# 20일 평균의 20퍼센트를 Envelope으로 설정하여 지지선을 가지고 판단
+# 지지선 이하로 내려왔다가 다시 지지선을 상향 돌파하면 높은 확률로 큰 상승
+# 재료, 재무, 이슈, 수급, 주가 위치 등 여러 기법을 적용하여 판단 필요
+# 선을 뚫고 내려올 때 매매하는 것이 아니라, 다시 선을 뚫고 올라가서 엔벨로프를 벗어났을 때 매매해야 성공확률이 높음
