@@ -1,10 +1,12 @@
 import sys
+import json
 from PyQt5.QtWidgets import *
 from PyQt5.QAxContainer import *
 from PyQt5.QtCore import *
 import time
 import pandas as pd
 import sqlite3
+import telegram
 
 # https://kminito.tistory.com/36
 
@@ -19,6 +21,9 @@ class Kiwoom(QAxWidget):
         self._set_signal_slots()
         self.condition = {}
         self.msg = ""
+        self.read_tok()
+        self.bot = telegram.Bot(token=self.bot_token['token'])
+        self.chat_id = self.bot_token['chat_id']
 
     def _create_kiwoom_instance(self):
         self.setControl("KHOPENAPI.KHOpenAPICtrl.1")
@@ -282,6 +287,10 @@ class Kiwoom(QAxWidget):
                          screenNo, conditionName, conditionIndex)
         msg = "{} 중지\n".format(conditionName)
         self.msg += msg
+
+    def read_tok(self):
+        with open("chatbot.json", "r") as chat_json:
+            self.bot_token = json.load(chat_json)
 
 
 if __name__ == "__main__":

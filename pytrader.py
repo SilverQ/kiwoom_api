@@ -4,9 +4,12 @@ from PyQt5.QtCore import *
 from PyQt5 import uic
 from Kiwoom import *
 import telegram
+
+# 파이썬으로 배우는 알고리즘 트레이딩(메인)
+# https://wikidocs.net/5859
 # 파이썬으로 텔레그램 봇 사용하기
 # https://kminito.tistory.com/37?category=373099
-# AI 자동 투자 봇 만들기  https://wikidocs.net/85329
+
 
 form_class = uic.loadUiType("pytrader.ui")[0]
 
@@ -18,6 +21,7 @@ class MyWindow(QMainWindow, form_class):
         self.setupUi(self)
 
         self.kiwoom = Kiwoom()
+        self.initUI()
         self.kiwoom.comm_connect()
 
         self.timer = QTimer(self)
@@ -30,17 +34,12 @@ class MyWindow(QMainWindow, form_class):
         accounts_list = accounts.split(';')[0:accouns_num]
         self.comboBox.addItems(accounts_list)
 
-        self.lineEdit.textChanged.connect(self.code_changed)
-        self.pushButton.clicked.connect(self.send_order)
+        self.lineEdit.textChanged.connect(self.code_changed)  # 종목 항목에 코드 입력시
+        self.pushButton.clicked.connect(self.send_order)  # 현금 주문 클릭시
 
         self.load_condition_list()  # 시작할 때 리스트를 채워준다
         self.checkBox_cond.setChecked(True)  # 체크박스 체크를 기본 설정으로
         self.pushButton_cond.clicked.connect(self.start_cond)
-
-        # self.bot = telegram.Bot(token='5838219107:AAFU0Nls-86wyXzs3GHrEocBxpm_q9QdErc')
-        # self.chat_id = 5854281101
-        # self.bot.sendMessage(chat_id=self.chat_id, text=self.kiwoom.msg)
-        # self.kiwoom.
 
     def initUI(self):
         self.setWindowTitle('Condition Monitor Bot v0.1')
@@ -61,7 +60,9 @@ class MyWindow(QMainWindow, form_class):
         num = self.spinBox.value()
         price = self.spinBox_2.value()
 
-        self.kiwoom.send_order("send_order_req", "0101", account, order_type_lookup[order_type], code, num, price, hoga_lookup[hoga], "")
+        self.kiwoom.send_order("send_order_req", "0101",
+                               account, order_type_lookup[order_type],
+                               code, num, price, hoga_lookup[hoga], "")
 
     def timeout(self):
         current_time = QTime.currentTime()

@@ -1,0 +1,4 @@
+# 파이썬으로 배우는 알고리즘 트레이딩
+# https://wikidocs.net/book/110
+# https://wikidocs.net/5931
+# AI 자동 투자 봇 만들기  https://wikidocs.net/85329
