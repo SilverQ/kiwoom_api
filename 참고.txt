@@ -1,3 +1,8 @@
+# 파이썬으로 배우는 알고리즘 트레이딩(메인)
+# https://wikidocs.net/5859
+# 파이썬으로 텔레그램 봇 사용하기
+# https://kminito.tistory.com/37?category=373099
+
 # 파이썬으로 배우는 알고리즘 트레이딩
 # https://wikidocs.net/book/110
 # https://wikidocs.net/5931
@@ -11,3 +16,11 @@
 # 지지선 이하로 내려왔다가 다시 지지선을 상향 돌파하면 높은 확률로 큰 상승
 # 재료, 재무, 이슈, 수급, 주가 위치 등 여러 기법을 적용하여 판단 필요
 # 선을 뚫고 내려올 때 매매하는 것이 아니라, 다시 선을 뚫고 올라가서 엔벨로프를 벗어났을 때 매매해야 성공확률이 높음
+
+
+# 이동평균을 구해보자
+# https://seong6496.tistory.com/102
+# https://wikidocs.net/4374
+# 엔벨로프 돌파 전략
+# https://stylebalance.tistory.com/77
+

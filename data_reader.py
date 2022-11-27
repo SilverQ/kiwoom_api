@@ -48,8 +48,31 @@ def read_data():
 
 data_df = read_data()
 # print(data_df[:3])
-# data_df[(data_df['code'] == '033270') & (data_df['Date'] >= '2021-01-01')][:3]
-print(data_df[data_df['code'] == '033270'])
+# print(data_df[(data_df['code'] == '033270')
+#               & (data_df['Date'] >= '2021-01-01')
+#               & (data_df['Volume'] != 0)].sort_values(by=['Date'], ascending=True))
+# # [455 rows x 9 columns]
+
+
 # 이동평균을 구해보자
+# https://seong6496.tistory.com/102
+# https://wikidocs.net/4374
 # 엔벨로프 돌파 전략
 # https://stylebalance.tistory.com/77
+
+def cal_envelope(code, interval=15, gap=20):
+    tmp = data_df[(data_df['code'] == code)
+                  # & (data_df['Date'] >= '2021-01-01')
+                  & (data_df['Volume'] != 0)].sort_values(by=['Date'], ascending=True)
+    ma_tmp = tmp['Adj Close'].rolling(window=interval).mean()
+    print(tmp[:3], '\n', ma_tmp[:3])
+    tmp.insert(len(ma_tmp), 'MA15', ma_tmp)
+
+# today = datetime.date.today()
+# print(today)
+
+cd = '033270'
+cal_envelope(cd)
+# print(data_df[data_df['code'] == cd])
+
+# print(data_df[data_df['code'] == '033270'])

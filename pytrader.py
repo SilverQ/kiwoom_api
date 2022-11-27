@@ -48,6 +48,8 @@ class MyWindow(QMainWindow, form_class):
         code = self.lineEdit.text()
         name = self.kiwoom.get_master_code_name(code)
         self.lineEdit_2.setText(name)
+        # cur_val = self._comm_get_data(code, "", "opt10081", 2, "현재가")
+        # self.spinBox_2.setText(cur_val)
 
     def send_order(self):
         order_type_lookup = {'신규매수': 1, '신규매도': 2, '매수취소': 3, '매도취소': 4}
