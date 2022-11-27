@@ -1,8 +1,10 @@
+from PyQt5 import uic
+from Kiwoom import *
+from pywinauto import application
+from pywinauto import timings
 import sys
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
-from PyQt5 import uic
-from Kiwoom import *
 import telegram
 
 # 파이썬으로 배우는 알고리즘 트레이딩(메인)
@@ -10,8 +12,10 @@ import telegram
 # 파이썬으로 텔레그램 봇 사용하기
 # https://kminito.tistory.com/37?category=373099
 
+# Qt-desiner
+# https://build-system.fman.io/qt-designer-download
 
-form_class = uic.loadUiType("pytrader.ui")[0]
+form_class = uic.loadUiType("pytrader1.ui")[0]
 
 
 class MyWindow(QMainWindow, form_class):
@@ -23,6 +27,7 @@ class MyWindow(QMainWindow, form_class):
         self.kiwoom = Kiwoom()
         self.initUI()
         self.kiwoom.comm_connect()
+        self.setWindowFlag(Qt.WindowStaysOnTopHint)
 
         self.timer = QTimer(self)
         self.timer.start(500)
@@ -38,18 +43,24 @@ class MyWindow(QMainWindow, form_class):
         self.pushButton.clicked.connect(self.send_order)  # 현금 주문 클릭시
 
         self.load_condition_list()  # 시작할 때 리스트를 채워준다
-        self.checkBox_cond.setChecked(True)  # 체크박스 체크를 기본 설정으로
+        self.checkBox_cond.setChecked(False)  # 체크박스 체크를 기본 설정으로
         self.pushButton_cond.clicked.connect(self.start_cond)
 
     def initUI(self):
         self.setWindowTitle('Condition Monitor Bot v0.1')
+        self.move(100, 100)
 
     def code_changed(self):
         code = self.lineEdit.text()
         name = self.kiwoom.get_master_code_name(code)
         self.lineEdit_2.setText(name)
-        # cur_val = self._comm_get_data(code, "", "opt10081", 2, "현재가")
-        # self.spinBox_2.setText(cur_val)
+        try:
+            cur_val = self.kiwoom.get_current_code_value(code)
+            print('현재가: ', cur_val)
+            self.spinBox_2.setValue(cur_val)
+        except Exception as e:
+            print('error: ', e)
+            # pass
 
     def send_order(self):
         order_type_lookup = {'신규매수': 1, '신규매도': 2, '매수취소': 3, '매도취소': 4}
@@ -136,8 +147,20 @@ class MyWindow(QMainWindow, form_class):
             self.checkBox_cond.setEnabled(True)
 
 
+def auto_update():
+    app = application.Application()
+    app.start("C:/OpenAPI/opversionup.exe")
+
+    title = "업그레이드 확인"
+    dlg = timings.WaitUntilPasses(10, 0.5, lambda: app.window_(title=title))
+
+    btn_ctrl = dlg.Button0
+    btn_ctrl.Click()
+
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    auto_update()
     myWindow = MyWindow()
     myWindow.show()
     app.exec_()

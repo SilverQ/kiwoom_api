@@ -3,10 +3,10 @@ import json
 from PyQt5.QtWidgets import *
 from PyQt5.QAxContainer import *
 from PyQt5.QtCore import *
+import telegram
 import time
 # import pandas as pd
 # import sqlite3
-import telegram
 
 # https://kminito.tistory.com/36
 
@@ -58,6 +58,14 @@ class Kiwoom(QAxWidget):
     def get_master_code_name(self, code):
         code_name = self.dynamicCall("GetMasterCodeName(QString)", code)
         return code_name
+
+    def get_current_code_value(self, code):
+        try:
+            close = self.dynamicCall("GetMasterLastPrice(QString)", code)
+        except Exception as e:
+            print(e)
+            close = 0
+        return int(close)
 
     def get_connect_state(self):
         ret = self.dynamicCall("GetConnectState()")

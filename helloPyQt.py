@@ -36,7 +36,9 @@ class MyWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle('Stock Trader')
-        self.setGeometry(300, 300, 300, 600)
+        self.setGeometry(100, 100, 300, 600)
+        # self.setWindowFlag(Qt.FramelessWindowHint)
+        self.setWindowFlag(Qt.WindowStaysOnTopHint)
 
         self.kiwoom = QAxWidget("KHOPENAPI.KHOpenAPICtrl.1")
         """
@@ -81,7 +83,7 @@ class MyWindow(QMainWindow):
         self.code_edit.setEnabled(True)
 
         self.listwidget = QListWidget(self)
-        self.listwidget.setGeometry(10, 150, 170, 300)
+        self.listwidget.setGeometry(10, 150, 280, 300)
 
         btn1 = QPushButton('조회', self)
         btn1.move(190, 20)

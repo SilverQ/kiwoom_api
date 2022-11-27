@@ -4,6 +4,12 @@ import datetime
 import os
 import numpy as np
 
+# 이동평균을 구해보자
+# https://seong6496.tistory.com/102
+# https://wikidocs.net/4374
+# 엔벨로프 돌파 전략
+# https://stylebalance.tistory.com/77
+
 start = datetime.datetime(1990, 1, 1)
 end = datetime.datetime(2022, 11, 25)
 
@@ -53,12 +59,6 @@ data_df = read_data()
 #               & (data_df['Volume'] != 0)].sort_values(by=['Date'], ascending=True))
 # # [455 rows x 9 columns]
 
-
-# 이동평균을 구해보자
-# https://seong6496.tistory.com/102
-# https://wikidocs.net/4374
-# 엔벨로프 돌파 전략
-# https://stylebalance.tistory.com/77
 
 def cal_envelope(code, interval=15, gap=20):
     tmp = data_df[(data_df['code'] == code)
