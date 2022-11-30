@@ -3,6 +3,8 @@ import pandas_datareader.data as web
 import datetime
 import os
 import numpy as np
+import matplotlib.pyplot as plt
+
 
 # 이동평균을 구해보자
 # https://seong6496.tistory.com/102
@@ -53,6 +55,10 @@ def read_data():
 
 
 data_df = read_data()
+# print(len(data_df))  # 4438734
+data_df = data_df[data_df['Volume'] != 0].sort_values(by=['code', 'Date'], ascending=True)
+
+# print(len(data_df))  # 4273916
 # print(data_df[:3])
 # print(data_df[(data_df['code'] == '033270')
 #               & (data_df['Date'] >= '2021-01-01')
@@ -65,14 +71,30 @@ def cal_envelope(code, interval=15, gap=20):
                   # & (data_df['Date'] >= '2021-01-01')
                   & (data_df['Volume'] != 0)].sort_values(by=['Date'], ascending=True)
     ma_tmp = tmp['Adj Close'].rolling(window=interval).mean()
-    print(tmp[:3], '\n', ma_tmp[:3])
-    tmp.insert(len(ma_tmp), 'MA15', ma_tmp)
+    print(len(tmp), len(ma_tmp))
+    # tmp = pd.concat([tmp, ma_tmp], axis=1)
+    tmp['ma_15'] = ma_tmp
+    return tmp
+
+
+def cal_envelope1(code, interval=15, gap=20):
+    data_df[data_df['code'] == code, 'mv_15'] = data_df[data_df['code'] == code]['Adj Close'].rolling(window=interval).mean()
+
 
 # today = datetime.date.today()
 # print(today)
 
 cd = '033270'
-cal_envelope(cd)
+# cal_envelope(cd)
+data_df_ma = cal_envelope(cd)
+data_df_ma['status_15'] = data_df_ma['ma_15']*0.85 > data_df_ma['Adj Close']
 # print(data_df[data_df['code'] == cd])
+print(data_df_ma[['Date', 'Adj Close', 'ma_15', 'status_15']][-120:-100])
+tmp = data_df_ma[['Date', 'Adj Close', 'ma_15', 'status_15']][-120:-100]
 
-# print(data_df[data_df['code'] == '033270'])
+# fig = plt.figure()
+fig, ax = plt.subplots()
+ax.plot(tmp['Date'], tmp['Adj Close'])
+ax.plot(tmp['Date'], tmp['ma_15'])
+ax.plot(tmp['Date'], tmp['ma_15']*0.85)
+plt.show()
