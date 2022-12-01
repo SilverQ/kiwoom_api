@@ -4,6 +4,7 @@ import datetime
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+import pickle
 
 
 # 이동평균을 구해보자
