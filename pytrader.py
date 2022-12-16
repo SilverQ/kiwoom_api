@@ -128,13 +128,16 @@ class MyWindow(QMainWindow, form_class):
         code = self.lineEdit.text()
         name = self.kiwoom.get_master_code_name(code)
         self.lineEdit_2.setText(name)
-        try:
-            cur_val = self.kiwoom.get_current_code_value(code)
-            print('현재가: ', cur_val)
-            self.spinBox_2.setValue(cur_val)
-        except Exception as e:
-            print('error: ', e)
-            # pass
+        cur_val = self.kiwoom.get_current_code_value(code)
+        # print('현재가: ', cur_val)
+        self.spinBox_2.setValue(cur_val)
+        # try:
+        #     cur_val = self.kiwoom.get_current_code_value(code)
+        #     print('현재가: ', cur_val)
+        #     self.spinBox_2.setValue(cur_val)
+        # except Exception as e:
+        #     print('error: ', e)
+        #     # pass
 
     def get_val(self, code):
         name = self.kiwoom.get_master_code_name(code)
@@ -147,6 +150,7 @@ class MyWindow(QMainWindow, form_class):
             self.send_order2(code, cur_val)
 
     def send_order(self):
+        print('주문: ', self.lineEdit.text())
         order_type_lookup = {'신규매수': 1, '신규매도': 2, '매수취소': 3, '매도취소': 4}
         hoga_lookup = {'지정가': "00", '시장가': "03"}
 

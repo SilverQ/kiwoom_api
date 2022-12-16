@@ -36,6 +36,7 @@ class Kiwoom(QAxWidget):
         self.OnReceiveConditionVer.connect(self.receiveConditionVer)
         self.OnReceiveTrCondition.connect(self.receiveTrCondition)
         self.OnReceiveRealCondition.connect(self.receiveRealCondition)
+        self.OnReceiveChejanData.connect(self._receive_chejan_data)
 
     def comm_connect(self):
         self.dynamicCall("CommConnect()")
