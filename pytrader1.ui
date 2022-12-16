@@ -249,7 +249,7 @@
       <x>210</x>
       <y>10</y>
       <width>291</width>
-      <height>381</height>
+      <height>501</height>
      </rect>
     </property>
     <property name="title">
@@ -269,9 +269,9 @@
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>140</y>
+       <y>90</y>
        <width>261</width>
-       <height>171</height>
+       <height>401</height>
       </rect>
      </property>
     </widget>
@@ -279,7 +279,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>110</y>
+       <y>70</y>
        <width>64</width>
        <height>15</height>
       </rect>
@@ -294,26 +294,45 @@
        <x>170</x>
        <y>30</y>
        <width>71</width>
-       <height>28</height>
+       <height>23</height>
       </rect>
      </property>
      <property name="text">
-      <string>적용</string>
+      <string>검색</string>
      </property>
     </widget>
-    <widget class="QCheckBox" name="checkBox_cond">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>70</y>
-       <width>151</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>텔레그램 알림받기</string>
-     </property>
-    </widget>
+   </widget>
+   <widget class="QCheckBox" name="check_box_receive_msg">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>480</y>
+      <width>151</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>텔레그램 알림받기</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+    <property name="tristate">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QGroupBox" name="groupBox_3">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>290</y>
+      <width>181</width>
+      <height>181</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>자동주문</string>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
