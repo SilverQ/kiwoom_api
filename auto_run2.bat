@@ -1,0 +1,1 @@
+D:\DL_work\kiwoom_api\venv\Scripts\activate.bat && python D:\DL_work\kiwoom_api\auto_run.py
