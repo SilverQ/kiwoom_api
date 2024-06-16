@@ -148,24 +148,52 @@ dr.implicitly_wait(5)
 # port_dict = {}
 # port_dict['AT4659525'] = '린다 라시케#1'
 # port_dict['AT4659521'] = '피터린치 급성장#2'
-port_xpath = ['/html/body/form/div[5]/div[10]/div[2]/div[3]/div[1]/div[5]/div[4]/table/tbody/tr[1]',
+port_xpath = ['/html/body/form/div[5]/div[10]/div[2]/div[3]/div[1]/div[3]/div[4]/table/tbody/tr[1]',
+              '/html/body/form/div[5]/div[10]/div[2]/div[3]/div[1]/div[3]/div[4]/table/tbody/tr[3]',
+              '/html/body/form/div[5]/div[10]/div[2]/div[3]/div[1]/div[3]/div[4]/table/tbody/tr[5]',
+              '/html/body/form/div[5]/div[10]/div[2]/div[3]/div[1]/div[3]/div[4]/table/tbody/tr[7]',
+              '/html/body/form/div[5]/div[10]/div[2]/div[3]/div[1]/div[3]/div[4]/table/tbody/tr[9]',
+              '/html/body/form/div[5]/div[10]/div[2]/div[3]/div[1]/div[5]/div[4]/table/tbody/tr[1]',
               '/html/body/form/div[5]/div[10]/div[2]/div[3]/div[1]/div[5]/div[4]/table/tbody/tr[3]']
+# port_xpath = ['/html/body/form/div[5]/div[10]/div[2]/div[3]/div[1]/div[5]/div[4]/table/tbody/tr[1]',
+#               '/html/body/form/div[5]/div[10]/div[2]/div[3]/div[1]/div[5]/div[4]/table/tbody/tr[3]']
 
 for k in port_xpath:
+    msg_for_send = ''
+    tmp_len1 = 0
     try:
         port_id, port_name, df = get_table(dr=dr, tb_path=k, tb_name='매수대상')
-        send_msg('포트: ' + port_id + ', ' + port_name)
-        send_msg('매수대상' + '\n' + df.to_string(index=False))
+        # send_msg('포트: ' + port_id + ', ' + port_name)
+        # send_msg('매수대상' + '\n' + df.to_string(index=False))
+        # print(df)
+        tmp_len1 += len(df)
     except Exception as e:
-        print(e)
-        send_msg('매수대상 없음')
+        # print(e)
+        # print(tmp_len)
+        pass
+    msg_for_send += '포트: ' + port_id + ', ' + port_name
+    if tmp_len1 > 0:
+        msg_for_send += '\n' + '매수대상' + '\n' + df[['종목명', '종목코드', '매수가격(원)', '수량(주)']].to_string(index=False)
+    else:
+        msg_for_send += '\n' + '매수대상 없음'
+        # send_msg('매수대상 없음')
+    tmp_len2 = 0
     try:
-        df = get_table(dr=dr, tb_path=k, tb_name='매도대상')
+        _, _, df = get_table(dr=dr, tb_path=k, tb_name='매도대상')
         # send_msg('포트명: ' + port_dict[k])
-        send_msg('매도대상' + '\n' + df.to_string(index=False))
+        # send_msg('매도대상' + '\n' + df.to_string(index=False))
+        # print(df)
+        tmp_len2 += len(df)
+        # print(tmp_len)
     except Exception as e:
-        print(e)
-        send_msg('매도대상 없음')
+        # print(e)
+        pass
+    if tmp_len2 > 0:
+        msg_for_send += 2 * '\n' + '매도대상' + '\n' + df[['종목명', '종목코드', '매도가격(원)', '수량(주)', '사유']].to_string(index=False)
+    else:
+        msg_for_send += '\n' + '매수대상 없음'
+    # if tmp_len > 0:
+    send_msg(msg_for_send)
 print('done!')
 # time.sleep(300)
 

@@ -123,10 +123,6 @@ def get_port_num(dr):
     return tmp_dict
 
 
-dr = create_driver()
-wait = WebDriverWait(dr, 10)
-
-
 def login():
     dr.get("http://intro.newsystock.com/login/")
     dr.implicitly_wait(5)
@@ -167,26 +163,36 @@ def load_cookies(driver):
             driver.add_cookie(cookie)
     return driver
 
-# dr = login()
-try:
-    # dr.get("http://intro.newsystock.com/login/")
-    dr.get("https://genport.newsystock.com/Main.aspx")
-    dr.implicitly_wait(5)
-    dr = load_cookies(dr)
-    # dr.get("https://genport.newsystock.com/Main.aspx")
-    print('load cookies done!')
-except Exception as e:
-    print(e)
-    # login2(dr)
+dr = create_driver()
+wait = WebDriverWait(dr, 10)
 
-# 쿠키 로드
+dr = login()
+# # 쿠키 로드
+# try:
+#     # dr.get("http://intro.newsystock.com/login/")
+#     dr.get("https://genport.newsystock.com/Main.aspx")
+#     dr.implicitly_wait(5)
+#     dr = load_cookies(dr)
+#     # dr.get("https://genport.newsystock.com/Main.aspx")
+#     print('load cookies done!')
+# except Exception as e:
+#     print(e)
+#     # login2(dr)
+
 
 dr.get('https://genport.newsystock.com/GenPro/PortManage.aspx')
 time.sleep(5)
 dr.implicitly_wait(5)
 
-port_xpath = ['/html/body/form/div[5]/div[10]/div[2]/div[3]/div[1]/div[5]/div[4]/table/tbody/tr[1]',
+port_xpath = ['/html/body/form/div[5]/div[10]/div[2]/div[3]/div[1]/div[3]/div[4]/table/tbody/tr[1]',
+              '/html/body/form/div[5]/div[10]/div[2]/div[3]/div[1]/div[3]/div[4]/table/tbody/tr[3]',
+              '/html/body/form/div[5]/div[10]/div[2]/div[3]/div[1]/div[3]/div[4]/table/tbody/tr[5]',
+              '/html/body/form/div[5]/div[10]/div[2]/div[3]/div[1]/div[3]/div[4]/table/tbody/tr[7]',
+              '/html/body/form/div[5]/div[10]/div[2]/div[3]/div[1]/div[3]/div[4]/table/tbody/tr[9]',
+              '/html/body/form/div[5]/div[10]/div[2]/div[3]/div[1]/div[5]/div[4]/table/tbody/tr[1]',
               '/html/body/form/div[5]/div[10]/div[2]/div[3]/div[1]/div[5]/div[4]/table/tbody/tr[3]']
+
+
 
 for k in port_xpath:
     try:
@@ -219,4 +225,4 @@ print('done!')
 #     time.sleep(600)
 
 
-'//*[@id="listBT"]'
+# '//*[@id="listBT"]'
